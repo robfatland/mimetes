@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Downloaded PDFs (large, regenerable)
+*.pdf
+
+# Large data files (regenerable via download scripts)
+*.kml
+
+# Extracted text (regenerable from PDFs)
+*_extracted.txt
+
+# Rendered presentation output (regenerable)
+presentation.html
+
+# Figure previews (regenerable)
+images/preview/
+
+# AWS — should never be here, but just in case
+.aws/
+*.pem
+
+# Environment files with secrets
+.env
+.env.*
+
+# Docker
+.docker/
+
+# Model cache
+.cache/

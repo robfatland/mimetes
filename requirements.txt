@@ -1,0 +1,28 @@
+# Core ML/DL
+torch>=2.0
+torchvision
+torchaudio
+
+# Hugging Face ecosystem
+transformers
+datasets
+huggingface-hub
+
+# Data science essentials
+numpy
+pandas
+matplotlib
+scikit-learn
+
+# PDF and document processing
+pymupdf
+
+# AWS
+boto3
+
+# HTTP / API access
+requests
+
+# Jupyter support
+jupyter
+ipykernel
