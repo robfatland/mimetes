@@ -42,19 +42,31 @@ li { font-size: 0.75em; }
 
 ---
 
+>Terminology: The non-profit Allen Institute for Artificial Intelligence will be abbreviated "**AI2**". 
+
+
 ## Theme for today
 
 
-The non-profit Allen Institute for Artificial Intelligence abbreviates as "**AI2**". 
+Imagine we are glaciologists interested in glacier thickness and surface velocity in Alaska. We have access to the AWS cloud and therefore to the AWS Bedrock "Foundation Model" service. This service can route our AI prompts to the Anthropic Claude LLM: We hope a helpful research tool. 
 
 
-Let's look at the AWS Bedrock service. It routes prompts to selectable Foundation Models include Anthropic's Claude LLM. We pretend we are glaciologists interested in glacier thickness and surface velocity along the glacier centerline.
+---
 
 
-Let's work from an Integrated Development Environment (IDE) based on VS Code with a built-in Coding Assistant: `kiro` also provided by AWS. Paid subscription enabled ($20/month). 
+## Theme continued
 
 
-Finally: AI2 offers AI-powered research services ($0). 
+- Suppose also we use the `kiro` Integrated Development Environment. Based on VS Code it includes a built-in AI Coding Assistant. (Paid subscription enabled: $20/month) 
+
+
+- Finally: AI2 offers AI-powered research services
+
+
+- 3 modes { AWS Bedrock API, `kiro` IDE, AI2 "Asta" research tools}
+
+
+(Demo: All 3)
 
 
 ---
@@ -64,14 +76,14 @@ Finally: AI2 offers AI-powered research services ($0).
 
 
 1. AI2 Semantic Scholar API: Locate a paper
-2. Download, extract text and figures
-3. pdf > AWS Bedrock API > Claude Sonnet > summary
-4. Associated code? Data? (ice thickness, velocity)
-5. `kiro` > Python > illustrative charts
-6. Pose a research question: Asta literature review
-7. Asta experiment
+2. Download the paper; extract text and figures
+3. Use AWS Bedrock to summarize the paper
+4. Identify associated code and data
+5. `kiro` > Python > charts
+6. Pose a related research question
+7. Asta AutoDiscovery experiment
 8. Cost accounting
-9. Open/public methods
+9. Make everything Open/Public
 10. Reflection: Use of the `kiro` IDE
 
 ---
@@ -79,9 +91,8 @@ Finally: AI2 offers AI-powered research services ($0).
 ## Step 1 · AI2 Semantic Scholar API: Locate a paper
 
 
-We know that the NASA IceBridge mission produced a paper
-and some data for glaciers in and near Alaska... so let's engage with
-the AI2 "Semantic Scholar" service via their well-documented API:
+The NASA *IceBridge* mission includes glaciers in and near Alaska. We ask the AI2 Semantic Scholar service to find related publications.
+
 
 <style scoped>
 p, strong { font-size: 0.85em; }
@@ -107,27 +118,30 @@ DOI: `10.31223/X53T78` · https://eartharxiv.org/repository/etc
 
 ---
 
-## Observations
+## Aside: Digital Object Identifiers (DOI)
 
 
 laptop > Semantic Scholar > DOI > `doi.org` > EarthArXiv > PDF download link
 
 
-- From a research topic and some keywords: `kiro` sorted out the API and wrote a `find_paper.py` Python program
-- Semantic Scholar is a free service from the Allen Institute for AI focused on associative exploration of published research
-- The API call required 8 lines of Python code (`requests` library)
+
+- Semantic Scholar (AI2): Focus on associative exploration of published research
+- `kiro` sorted out the SS API from online documentation
+- `kiro` wrote a `find_paper.py` Python program
+- The query was 8 lines of Python code (`requests` library)
 - The target paper was found at EarthArXiv
 - DOI > queryable, citable, connectable knowledge graph
 
 
 ---
 
-## Step 2 · Extract Text from the PDF
+## Step 2 · Download the paper; extract text and figures
+
 
 **Tool:** pymupdf (localhost, no network)
 
 
-"Oh you will need to install..." pattern
+"You will need to install X" pattern
 
 
 ```python
@@ -141,10 +155,27 @@ text = "\n".join(page.get_text() for page in doc)
 - 43 pages → 79,738 characters
 - Clean extraction
 - Fits within Sonnet's 200k token context window
+- extract_figures.py (installed Pillow)
 
 ---
 
-## Step 3 · Summarize via AWS Bedrock
+## From the Paper: Bed Elevation (Tober et al Fig. 4a)
+
+![w:595](images/fig4a_bed_elevation.png)
+
+*Tober et al. (2025), CC BY 4.0*
+
+---
+
+## From the Paper: Ice Thickness (Tober et al Fig. 4b)
+
+![w:595](images/fig4b_ice_thickness.png)
+
+*Tober et al. (2025), CC BY 4.0*
+
+---
+
+## Step 3 · Use AWS Bedrock to summarize the paper
 
 **Tool:** boto3 → Bedrock → Claude Sonnet
 
@@ -169,7 +200,9 @@ response = client.invoke_model(
 
 ## Step 3 · Summary Result
 
+
 **Key findings from the paper:**
+
 
 - First comprehensive analysis of NASA Operation IceBridge radar data in Alaska (2012–2021)
 - Over 5,500 linear-km of ice thickness measurements
@@ -178,7 +211,7 @@ response = client.invoke_model(
 
 ---
 
-## Step 4 · Code and Data Availability
+## Step 4 · Identify associated code and data
 
 **Question to Sonnet:** "Does this paper reference code or data repositories?"
 
@@ -186,55 +219,34 @@ response = client.invoke_model(
 - **Data:** "Available upon manuscript publication" (per EarthArXiv metadata)
 - **IceBridge source data:** Archived at NSIDC (NASA)
 
----
 
-## From the Paper: Bed Elevation (Fig. 4a)
-
-![w:595](images/fig4a_bed_elevation.png)
-
-*Tober et al. (2025), CC BY 4.0*
+What about ice velocities? *Different* project called "ITS LIVE", details omitted for time.
 
 ---
 
-## From the Paper: Ice Thickness (Fig. 4b)
+## Step 5 · `kiro` > Python > charts
 
-![w:595](images/fig4b_ice_thickness.png)
-
-*Tober et al. (2025), CC BY 4.0*
-
----
-
-## Step 5 · Chart Glacier Thickness from the Data Repository
 
 ![w:900](images/bagley_combined_profile.png)
 
-Generated from `OIB-AK_radar` KML + ITS_LIVE velocity (Kiro IDE → Python)
+
+IceBridge (250 m) glacier thickness, ITS_LIVE velocities
+
 
 ---
+
 
 ## Step 6 · Pose a Related Research Question
 
-What does code/data availability mean for reproducibility?
 
-- ✅ RAGU is open source (GPL v3), installable via pip
-- ⚠️ Processed data not yet public (preprint stage)
-- ✅ Source radar data available through NASA NSIDC
-- A researcher could reproduce the analysis pipeline once data is released
+**Prompt to Sonnet:** From a 1 degree surface slope and 650 to 1200 meter ice thickness: Calculated deformation speed ranges from 15 to 100 meters per year. Observed speed ranges from 140 to 220 meters per year implying basal sliding varying from 40 to 150 meters per year along an 18 km segment of the Bagley Ice Valley. Are there estimates in the literature for sliding speed relevant to these estimates: Both in magnitude and variability?  
 
----
 
-## Step 6 · Pose a Related Research Question
-
-**Prompt to Sonnet:** "Given these findings, propose a related research question."
-
-Example hypothesis:
-> *How do overdeepened glacier beds correlate with observed rates of terminus
-> retreat across the Alaska Range, and can this predict future proglacial lake
-> formation?*
+`kiro` > Python > Bedrock > Sonnet > `bedrock_response.md`
 
 ---
 
-## Step 7 · Ask Asta to Run an Experiment on Extracted Data
+## Step 7 · Asta AutoDiscovery Experiments
 
 **Tool:** Semantic Scholar API
 
@@ -250,6 +262,38 @@ Returns a curated list of related work — building a literature review programm
 
 ---
 
+## 7 continued Asta AutoDiscovery
+
+
+![w:700](images/asta_autodiscovery_launcher.png)
+
+
+---
+
+
+![w:600](images/asta_autodiscovery_graph.png)
+
+
+---
+
+
+![w:500](images/asta_autodiscovery_experiment6.png)
+
+
+---
+
+
+![w:900](images/asta_autodiscovery_code.png)
+
+
+---
+
+
+![w:700](images/asta_autodiscovery_chart.png)
+
+
+---
+
 ## Step 8 · Cost Accounting
 
 | Call | Input Tokens | Output Tokens | Cost |
@@ -258,8 +302,6 @@ Returns a curated list of related work — building a literature review programm
 | Code/data | ~27,000 | ~500 | $0.09 |
 | Hypothesis | ~27,000 | ~300 | $0.09 |
 | **Total** | | | **~$0.29** |
-
-The entire AI-assisted literature review costs less than a cup of coffee.
 
 ---
 
@@ -278,7 +320,7 @@ mimetes/case_studies/03_arXiv/
 └── presentation.md      # This slide deck
 ```
 
-Reproducible. Version-controlled. Portable (Docker).
+Reproducible. Version-controlled.
 
 ---
 
@@ -286,10 +328,10 @@ Reproducible. Version-controlled. Portable (Docker).
 
 **Kiro** — an AI-assisted IDE built on VS Code
 
-- The `mimetes` repository was developed interactively with Kiro
-- Steering files guide the AI assistant's behavior
-- Documentation updates automatically as progress is made
-- The tool that builds the tool that does the science
+- This case study (in the `mimetes` repository) developed interactively with Kiro
+- Steering files guide Coding Assistant behavior
+- `kiro` can unilaterally adapt to API / MCP servers
+- The tool that builds the tool that supports the science
 
 ---
 
@@ -300,14 +342,32 @@ Reproducible. Version-controlled. Portable (Docker).
 | Find papers | Semantic Scholar API |
 | Paper summary | pymupdf + AWS Bedrock > Claude Sonnet |
 | Implications | AWS Bedrock iterative |
-| Build literature reviews | Semantic Scholar + Bedrock |
+| Calculation | `kiro` |
+| Literature reviews | Semantic Scholar + Bedrock |
 | Cost | Pennies per paper |
-| Reproducibility | Python + Git + Docker |
+| Reproducibility | GitHub + `kiro`|
 
 ---
 
-## Questions?
+## Acknowledgments: AI2 Asta
+
+
+Asta Scientific Corpus Tool and DataVoyager provided by the Allen Institute for AI.
+
+
+Bragg, J., D'Arcy, M., Balepur, N., et al. (2025).
+"AstaBench: Rigorous Benchmarking of AI Agents with a Scientific Research Suite."
+arXiv:2510.21652 — https://arxiv.org/abs/2510.21652
+
+
+---
+
+## Questions? Compliments?
+
+![bg right:45% w:300](images/boom.png)
 
 **Repository:** github.com/robfatland/mimetes
 **Contact:** help@cloudbank.org
+
+---
 
