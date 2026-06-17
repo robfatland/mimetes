@@ -4,30 +4,33 @@ inclusion: always
 
 # Mimetes Project Context
 
-## Overview
+## Overview: Tech Serving Research
 
-This repository is a learning sequence for working with models and data from Hugging Face
-(and potentially other modeling resources). The name comes from Greek: μιμητής — one who imitates.
+AI/ML models and scientific data resources — a progressive learning sequence.
 
-The goal is to build skill progressively through a series of case studies (minimum 4, target ~7),
-culminating in building a de novo model.
+The name comes from Greek: μιμητής — one who imitates.
+
+The goal is to build skill through a series of seven case studies. The
+aspirational goal is to build a de novo model.
 
 ## Technology Stack
 
 - **Primary language:** Python
-- **Core framework:** PyTorch
-- **Model ecosystem:** Hugging Face (transformers, datasets, hub)
+- **Core framework:** PyTorch (planned, not yet exercised)
+- **Model ecosystem:** Hugging Face, AWS Bedrock, AI2 Asta, and other resources as needed
 - **Environment manager:** Miniconda
 - **Conda environment name:** `mimetes`
 - **OS:** Linux via WSL on Windows
 - **Containerization:** Docker (for portability and eventual cloud migration)
+- **IDE:** Kiro (AWS-provided VS Code variant with coding assistant)
+- **Presentation:** Marp (Markdown → HTML slides)
 
 ## Development Environment
 
 - The Python kernel runs in a Linux (WSL) environment.
 - The developer works from one of two Windows laptops ("the Dell" or "the Surface"),
   accessing Linux through WSL.
-- The active miniconda environment is called `mimetes`.
+- The `mimetes` conda environment is the only environment used for this repo.
 - When processing scales up, work may migrate to a cloud VM.
 
 ## Dependency Management
@@ -49,29 +52,55 @@ culminating in building a de novo model.
   documentation. The chat is ephemeral; the docs are the record.
 - The README.md serves as the top-level guide; individual case studies get their own docs.
 
-## Project Structure (aspirational)
+## Project Structure
 
 ```
 mimetes/
 ├── README.md                  # Top-level overview and navigation
-├── requirements.txt           # Pinned Python dependencies
+├── requirements.txt           # Python dependencies
 ├── Dockerfile                 # Container definition for reproducibility
+├── .gitignore                 # Excludes PDFs, KMLs, caches, secrets
 ├── .kiro/
 │   └── steering/              # Kiro steering files
 ├── case_studies/
-│   ├── 01_<topic>/            # Each case study in its own directory
-│   │   ├── README.md          # Case study overview and learnings
-│   │   ├── notebook.ipynb     # Exploratory work (optional)
-│   │   └── *.py               # Scripts
-│   ├── 02_<topic>/
-│   └── ...
-└── docs/                      # Additional documentation as needed
+│   ├── 01_something_basic/
+│   │   ├── StudyPlan.md
+│   │   ├── slides.md          # Marp presentation deck
+│   │   ├── images/
+│   │   └── *.py
+│   ├── 02_notional_GAN/
+│   │   ├── StudyPlan.md
+│   │   ├── slides.md
+│   │   ├── images/
+│   │   └── *.py
+│   ├── 03_research_mechanics/
+│   │   ├── StudyPlan.md
+│   │   ├── slides.md
+│   │   ├── images/
+│   │   └── *.py
+│   ├── 04_tbd/
+│   │   ├── StudyPlan.md
+│   │   ├── slides.md
+│   │   └── ...
+│   ├── 05_tbd/
+│   │   ├── StudyPlan.md
+│   │   ├── slides.md
+│   │   └── ...
+│   ├── 06_tbd/
+│   │   ├── StudyPlan.md
+│   │   ├── slides.md
+│   │   └── ...
+│   └── 07_tbd/
+│       ├── StudyPlan.md
+│       ├── slides.md
+│       └── ...
 ```
 
 ## Conventions
 
 - Case studies are numbered sequentially (`01_`, `02_`, ...) to reflect the learning progression.
-- Each case study directory contains its own README documenting objectives, approach, and findings.
+- Each case study directory contains a `StudyPlan.md` documenting objectives, approach, and findings.
+- Each case study directory contains a `slides.md` (Marp format) for its presentation deck.
 - Python code follows standard formatting (prefer Black or similar formatter if configured).
 - Commit messages should be descriptive of what was learned or built, not just what changed.
 
@@ -82,6 +111,7 @@ mimetes/
 - Use `<style scoped>` to reduce font size on dense slides rather than letting
   content overflow.
 - Images use Marp's `![w:NNN]` syntax for sizing; place in an `images/` subfolder.
+- Render command: `marp slides.md -o slides.html --allow-local-files --html`
 
 ## Cloud Migration Notes
 
