@@ -15,7 +15,9 @@ header: "![w:135](cloudbank_logo.png)&nbsp; Programmatic AWS-AI for Scientific R
 
 **CloudBank Cloud Clinic June 2026**
 
-Using: AWS Bedrock, AI2 Asta and the AWS `kiro` IDE
+Touching upon AWS Bedrock, AI2 AstaLabs, AWS `kiro` IDE. 
+<br>
+Github: robfatland ~ mimetes repo
 
 ---
 
@@ -42,7 +44,7 @@ li { font-size: 0.75em; }
 
 ---
 
->Terminology: The non-profit Allen Institute for Artificial Intelligence will be abbreviated "**AI2**". 
+>Terminology: The non-profit Allen Institute for Artificial Intelligence will be abbreviated **AI2**. Their research toolbox is called **Asta** 
 
 
 ## Theme for today
@@ -65,8 +67,6 @@ Imagine we are glaciologists interested in glacier thickness and surface velocit
 
 - 3 modes { AWS Bedrock API, `kiro` IDE, AI2 "Asta" research tools}
 
-
-(Demo: All 3)
 
 
 ---
@@ -141,7 +141,7 @@ laptop > Semantic Scholar > DOI > `doi.org` > EarthArXiv > PDF download link
 **Tool:** pymupdf (localhost, no network)
 
 
-"You will need to install X" pattern
+"You will need to install X"
 
 
 ```python
@@ -196,6 +196,8 @@ response = client.invoke_model(
 )
 ```
 
+Time permits: Check out `summary.py`
+
 ---
 
 ## Step 3 · Summary Result
@@ -211,7 +213,7 @@ response = client.invoke_model(
 
 ---
 
-## Step 4 · Identify associated code and data
+## Step 4 · Bedrock > Identify associated code and data
 
 **Question to Sonnet:** "Does this paper reference code or data repositories?"
 
@@ -227,10 +229,19 @@ What about ice velocities? *Different* project called "ITS LIVE", details omitte
 ## Step 5 · `kiro` > Python > charts
 
 
+![w:900](images/mimetes_glacier_data.png)
+
+
+---
+
+
+## Step 5 · `kiro` > Python > charts
+
+
 ![w:900](images/bagley_combined_profile.png)
 
 
-IceBridge (250 m) glacier thickness, ITS_LIVE velocities
+IceBridge glacier thickness, ITS_LIVE velocities
 
 
 ---
@@ -248,17 +259,14 @@ IceBridge (250 m) glacier thickness, ITS_LIVE velocities
 
 ## Step 7 · Asta AutoDiscovery Experiments
 
-**Tool:** Semantic Scholar API
+**Tool:** AI2 Asta AutoDiscovery (browser-based)
 
-```python
-params = {
-    "query": "overdeepened glacier beds proglacial lake Alaska retreat",
-    "fields": "title,authors,year,citationCount",
-    "limit": 10,
-}
-```
+- Upload `bagley_profile.csv` to Asta
+- Provide context: ice thickness profile, Bagley Ice Valley, Alaska
+- AutoDiscovery autonomously runs multiple experiments on the data
+- Returns: charts, statistical findings, code, and a methods section
 
-Returns a curated list of related work — building a literature review programmatically.
+Unlike DataVoyager (single Q&A), AutoDiscovery explores the data on its own.
 
 ---
 
@@ -331,7 +339,7 @@ Reproducible. Version-controlled.
 - This case study (in the `mimetes` repository) developed interactively with Kiro
 - Steering files guide Coding Assistant behavior
 - `kiro` can unilaterally adapt to API / MCP servers
-- The tool that builds the tool that supports the science
+- "the tool to build the tool to support the science"
 
 ---
 
@@ -344,6 +352,7 @@ Reproducible. Version-controlled.
 | Implications | AWS Bedrock iterative |
 | Calculation | `kiro` |
 | Literature reviews | Semantic Scholar + Bedrock |
+| Hypotheses | Asta AutoDiscovery from AI2 |
 | Cost | Pennies per paper |
 | Reproducibility | GitHub + `kiro`|
 
@@ -352,7 +361,7 @@ Reproducible. Version-controlled.
 ## Acknowledgments: AI2 Asta
 
 
-Asta Scientific Corpus Tool and DataVoyager provided by the Allen Institute for AI.
+Asta Scientific Corpus Tool and AutoDiscovery provided by the Allen Institute for AI.
 
 
 Bragg, J., D'Arcy, M., Balepur, N., et al. (2025).
@@ -368,6 +377,4 @@ arXiv:2510.21652 — https://arxiv.org/abs/2510.21652
 
 **Repository:** github.com/robfatland/mimetes
 **Contact:** help@cloudbank.org
-
----
 

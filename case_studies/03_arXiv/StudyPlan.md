@@ -19,7 +19,7 @@ Today's presentation will run from a laptop. The intent is to touch upon three m
 - [x] Finish successfully running `find_paper.py` (blocked by S2 rate limit; key resolves this)
 - [x] Run `summarize.py` end-to-end
 - [x] Decide output format for presentation → Marp (HTML slides)
-- [x] Investigate AI2 Asta / Semantic Scholar for Step 7 (DataVoyager, browser-based)
+- [x] Investigate AI2 Asta / Semantic Scholar for Step 7 (AutoDiscovery, browser-based)
 - [x] Locate the RAGU code: https://github.com/btobers/RAGU
 - [x] Locate the IceBridge/Alaska data associated with the paper
 - [x] ITS_LIVE velocity integration
@@ -68,7 +68,7 @@ so the audience understands what's happening, where AWS enters.
 | 4 | Detect code/data availability | Bedrock → Claude Sonnet |
 | 5 | Chart glacier thickness from the data repository | Kiro IDE → Python (matplotlib) |
 | 6 | Pose a related research question | Bedrock → Claude Sonnet |
-| 7 | Ask Asta to run an experiment on extracted data | AI2 Asta DataVoyager (browser) |
+| 7 | Ask Asta to run experiments on extracted data | AI2 Asta AutoDiscovery (browser) |
 | 8 | Cost accounting | Aggregate token usage |
 | 9 | Making everything open/public | `mimetes` repo on GitHub |
 | 10 | Building with the `kiro` IDE | — |
@@ -96,7 +96,7 @@ model anything. This demystifies the process.
 - [x] Step 4: Code/data detection — Sonnet identified RAGU, NSIDC DOIs, GitHub data
 - [x] Step 5: Bagley profile chart from KML data + ITS_LIVE velocity + deformation calc
 - [x] Step 6: Science reasoning — Bedrock call on basal sliding (321 in / 2,048 out, $0.03)
-- [ ] Step 7: Asta DataVoyager — upload CSV, screencap results (browser demo)
+- [ ] Step 7: Asta AutoDiscovery — upload CSV, screencap results (browser demo)
 - [x] Step 8: Cost accounting — total ~$0.25 across all Bedrock calls
 - [x] Steps 9–10: Presentation framing complete (Marp deck, 20+ slides)
 
@@ -136,10 +136,10 @@ Step 6: ask_bedrock.py
     → Bedrock → Claude Sonnet (5 min timeout, 2048 max tokens)
     → write bedrock_response.md
 
-Step 7: AI2 Asta DataVoyager (browser)
+Step 7: AI2 Asta AutoDiscovery (browser)
     → upload bagley_profile.csv
-    → ask natural language question about the data
-    → screencap results for presentation
+    → provide context about the data
+    → AutoDiscovery autonomously runs multiple experiments
 
 Steps 8–10: Presentation framing
     → presentation.md (Marp) → presentation.html
@@ -280,7 +280,7 @@ the right one.
 
 ## Design Decisions Still Open
 
-1. **Asta DataVoyager** — browser demo for Step 7; screencap the result for the slide deck.
+1. **Asta AutoDiscovery** — browser demo for Step 7; screencap the results for the slide deck.
 2. **Batch vs. single** — Presentation demos one paper; the tool could generalize.
 
 ## Bedrock Science Reasoning
