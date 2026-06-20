@@ -162,7 +162,8 @@ Consider 468 input neurons connecting to 1000 hidden neurons. What lives where?
   12. There is one bias *per hidden neuron*, not one per wire. It shifts the
   total signal arriving at neuron 12 before the activation fires.
 - **ReLU** is applied *per hidden neuron*, after all incoming wires are summed.
-  Hidden neuron 12 computes: `relu(W1[0,12]*x[0] + W1[1,12]*x[1] + ... + W1[467,12]*x[467] + b1[12])`.
+  Hidden neuron 12 computes: `relu(W1[0,12]*x[0] + W1[1,12]*x[1] + ... + W1[467,12]*x[467] + b1[12])`
+  where x[i] is the value (activation) of the i'th input neuron.
 
 In the canonical diagram:
 ```
@@ -275,7 +276,7 @@ and plateaus. Optimizers like Adam are designed to navigate this terrain robustl
 
 ## 6. Layers in PyTorch
 
-PyTorch provides building blocks in `torch.nn`:
+PyTorch provides building blocks in `torch.nn` (nn = neural network):
 
 | Layer | What it does |
 |-------|-------------|
@@ -340,7 +341,7 @@ weight = weight - learning_rate * gradient
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 ```
 
-The **learning rate** is the most important hyperparameter. Too high: training
+The **learning rate** (LR, denoted η) is the most important hyperparameter. Too high: training
 diverges. Too low: training takes forever. Typical starting point: 0.001.
 
 ---
@@ -385,10 +386,97 @@ On a GPU: ~10 seconds. The difference grows enormously for larger models.
 
 ---
 
-## 11. The Logistics Map as a Learning Metaphor
+## 11. Types of Neural Networks
+
+| Type | What it's for | Key idea |
+|------|--------------|----------|
+| **Feedforward (MLP)** | Tabular data, simple classification | Layers in sequence, no loops. The "vanilla" network. |
+| **Convolutional (CNN)** | Images, spatial data | Layers detect local patterns (edges, textures) using small sliding filters. Translation-invariant. |
+| **Recurrent (RNN/LSTM/GRU)** | Sequences, time series, text | Has memory — output depends on current input AND previous states. Loops in the graph. |
+| **Transformer** | Text, code, anything sequential at scale | Attention mechanism: every element "looks at" every other element. No recurrence. Powers GPT, BERT, Claude. |
+| **Autoencoder** | Compression, denoising, feature learning | Encodes input to a small representation, then decodes back. Learns what's essential. |
+| **Variational Autoencoder (VAE)** | Generative modeling | Like autoencoder but the latent space is probabilistic. Can sample new data. |
+| **GAN** | Image/data generation | Two networks competing: generator makes fakes, discriminator catches them. |
+| **Diffusion model** | High-quality image generation | Learns to remove noise step by step. Powers DALL-E, Stable Diffusion, Midjourney. |
+| **Graph Neural Network (GNN)** | Molecular structure, social networks | Operates on graph-structured data (nodes + edges) rather than grids. |
+| **Physics-Informed NN (PINN)** | Scientific simulation | Encodes physical laws (PDEs) as constraints in the loss function. |
+
+**Relevant to our case studies:**
+- Case Study 01: CNN (ResNet-18, image classification via convolutions)
+- Case Study 02: MLP/Feedforward (the simplest, from scratch)
+- Case Study 04: GAN (two MLPs or CNNs competing)
+
+---
+
+## 12. Analogy from Nonlinear Dynamics
 
 The logistics map x_{n+1} = r · x_n · (1 - x_n) is the simplest system that
 transitions from predictable to chaotic behavior as a parameter changes.
+
+### Bifurcation Diagram
+
+![Logistics Map Bifurcation Diagram](images/logistics_bifurcation.png){ width=80% }
+
+\newpage
+
+### Cobweb Diagrams
+
+The following four diagrams show the logistics map iterated at different r values.
+
+**r = 2.8: Convergence to a stable fixed point**
+
+\
+
+![](images/logistics_cobweb_r2.8.png){ width=70% }
+
+\newpage
+
+**r = 3.2: Period-2 oscillation**
+
+\
+
+![](images/logistics_cobweb_r3.2.png){ width=70% }
+
+\newpage
+
+**r = 3.5: Period-4**
+
+\
+
+![](images/logistics_cobweb_r3.5.png){ width=70% }
+
+\newpage
+
+**r = 3.9: Chaos**
+
+\
+
+![](images/logistics_cobweb_r3.9.png){ width=70% }
+
+Script: `logistics_map.py` in the repo root.
+
+### The Mapping: Logistics Map → Neural Network Training
+
+The logistics map is a one-dimensional iterated map with one parameter (r).
+Neural network training is a million-dimensional iterated map with one key
+parameter (learning rate η). The structural parallel:
+
+| Logistics map | Neural network training |
+|--------------|------------------------|
+| State: x (one number) | State: all weights W (millions of numbers) |
+| Update rule: x_{n+1} = f(x_n, r) | Update rule: W_{n+1} = W_n - η·∇L(W_n) |
+| Parameter: r (growth rate) | Parameter: η (learning rate) |
+| Fixed point: x converges | Convergence: loss reaches a minimum |
+| Period-2: x oscillates between 2 values | Oscillation: loss bounces between values |
+| Chaos: x never settles | Divergence: loss explodes, training fails |
+
+Gradient descent IS an iterated map. Each training step applies a function to
+the current state (weights) to produce the next state. The learning rate controls
+how aggressively you iterate — exactly as r controls the logistics map.
+
+For GANs: you have two coupled maps (generator and discriminator updates), analogous
+to coupled logistics maps — a system known to exhibit synchronization,
+anti-synchronization, and hyperchaos.
 
 | r value | Behavior | Neural network analog |
 |---------|----------|----------------------|
@@ -398,23 +486,83 @@ transitions from predictable to chaotic behavior as a parameter changes.
 | > 3.57 | Chaos | Divergent training (LR too high) |
 | Periodic windows | Brief order within chaos | Sudden improvements after plateaus |
 
-The spiderweb diagram (cobweb plot) shows convergence to a fixed point — directly
-analogous to how gradient descent spirals toward a loss minimum. When the system
-bifurcates, the optimizer oscillates between two values instead of settling.
+The cobweb diagram shows convergence to a fixed point — directly analogous to how
+gradient descent spirals toward a loss minimum. When the system bifurcates, the
+optimizer oscillates between two values instead of settling.
 
-This isn't just an analogy. Neural network training IS a discrete dynamical system:
-the weight update rule `w_{n+1} = w_n - η·∇L(w_n)` is an iterated map, just like
-the logistics map. The learning rate η plays the role of r.
+### The Deeper Insight: What Converges, and Toward What
+
+Both the logistics map and neural network training are **iteration-based solvers.**
+But what they iterate toward, and the role of their control parameters, differ
+in an illuminating way.
+
+Interpreting the comparison is instructive but not simple. We follow a plan of
+giving a first-cut interpretation and then refining it twice to be more accurate.
+
+**First cut:**
+
+Both the LM and the NN solve programs are based in iteration. In the case of the
+LM we are iterating in the sense of letting time advance toward a potentially
+stable end state for the one characteristic parameter x (dependent on control
+parameter r). In the case of the NN we are iterating to carefully/gradually
+traverse a multi-dimensional loss hypersurface to arrive at a relatively flat
+solution region with minimum loss value: gradient descent. A distinction between
+them is that the control parameter r is a deterministic dial value choosing a
+particular fate; whereas η is itself subject to optimization as a hyperparameter
+and the question is "Can η lead to the one and only *correct* fate?"
+
+**Refinement 1: There is no unique correct fate.**
+
+The answer to that question illuminates a real difference. For the LM, there IS
+one fate per r — it's mathematically determined. For the NN, there is generally
+NO unique correct fate. The loss landscape has many local minima that are all
+"good enough." Different η values (and different random initializations) lead to
+different final weight configurations that perform comparably. So η doesn't select
+a unique fate; it influences *which* of many acceptable fates you land in. The
+practical question isn't "did we find THE answer" but "did we find AN answer that
+generalizes well to unseen data?"
+
+**Refinement 2: The r-to-η analogy breaks down further.**
+
+r and η are not truly analogous. r is part of the *system definition* — change r
+and you have a different logistics map with different dynamics and a different fate.
+η is part of the *solver* — change η and you have the same problem (same loss
+landscape) being solved with different step sizes. The NN's actual r-equivalent
+would be the architecture and data: change the dataset or the network structure
+and you have a fundamentally different loss landscape. η does not define the system;
+it is a procedural choice about how to navigate a system that is already defined
+by the model architecture, the data, and the loss function.
+
+**The loss surface** (loss landscape): A scalar-valued function L(W) defined over
+the high-dimensional parameter space. Every possible setting of all weights
+corresponds to a point; the loss function assigns a height (error) to that point.
+The gradient ∇L points uphill; we step opposite (downhill). The surface has valleys
+(good solutions), ridges, saddle points, and plateaus.
 
 ---
 
 ## What's Next
 
+- **Sections 5–10 Q&A:** Revisit these sections with questions once hands-on work begins.
+  (Skipped for now to maintain momentum toward code.)
 - **Case Study 01:** Apply this knowledge — fine-tune a pre-trained model
 - **Case Study 02:** Build everything from scratch — implement the training loop by hand
 - **Case Study 04:** Two networks competing (GAN) — dynamical systems with two coupled maps
+- **CUDA:** Confirmed available on the Dell laptop. GPU training is an option.
 
 ---
 
 *This document is a living reference. It will be updated as understanding deepens
 through hands-on work in the case studies.*
+
+---
+
+## Appendix: Generating this PDF
+
+```bash
+pandoc LearnPyTorch.md -o LearnPyTorch.pdf \
+  --pdf-engine=xelatex \
+  -V mainfont="DejaVu Serif" \
+  -V monofont="DejaVu Sans Mono" \
+  -f markdown-implicit_figures
+```

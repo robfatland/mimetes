@@ -112,6 +112,9 @@ mimetes/
   content overflow.
 - Images use Marp's `![w:NNN]` syntax for sizing; place in an `images/` subfolder.
 - Render command: `marp slides.md -o slides.html --allow-local-files --html`
+- **Every slide must have a visual.** No all-text slides. Use diagrams, charts,
+  code snippets with syntax highlighting, or images — but never a slide that is
+  only prose or bullet points without an accompanying visual element.
 
 ## Cloud Migration Notes
 
