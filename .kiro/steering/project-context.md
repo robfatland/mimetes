@@ -118,3 +118,9 @@ mimetes/
 - Docker is the planned mechanism for moving work off localhost to a cloud VM.
 - The Dockerfile should capture the full environment so the project runs identically anywhere.
 - Keep an eye on GPU requirements as models grow; document any CUDA/driver dependencies.
+
+## Living Documents
+
+- **`LearnPyTorch.md`** (repo root) — conceptual deep-dive into PyTorch, built
+  incrementally. Periodically revisit this document: scan for potential updating
+  or rewriting as understanding deepens through the case studies.
