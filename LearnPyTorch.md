@@ -11,8 +11,9 @@ PyTorch is a Python library that provides two things:
 
 1. **Tensors** — like NumPy arrays, but they can run on GPUs and they track
    the math you do with them
-2. **Automatic differentiation** — given any computation, PyTorch can compute
-   how to adjust inputs to change the output (gradients)
+2. **Automatic differentiation** — given a computation that maps model parameters
+   to a loss value, PyTorch computes how to adjust those parameters to reduce the
+   loss (gradients). The data is fixed; the parameters are what move.
 
 Everything else — layers, networks, optimizers, data loaders — is built on top
 of these two primitives.
@@ -23,10 +24,29 @@ of these two primitives.
 
 A tensor is a multi-dimensional array of numbers. That's all.
 
+**Properties:**
+- **Rectangular:** all dimensions are fixed-length. A 3×4×5 tensor has exactly 60 elements.
+  No ragged or variable-length axes.
+- **Homogeneous:** every element has the same data type (float32, int64, etc.). This is
+  what makes GPU computation fast — contiguous memory with uniform stride.
+- **Arbitrary rank:** scalars (rank 0), vectors (rank 1), matrices (rank 2), or higher.
+
+**Relation to algebra:** The elements are drawn from ℝ (or ℂ), which are fields. The
+array itself is like a vector space element — a member of ℝ^(d1 × d2 × ... × dn).
+But PyTorch doesn't enforce field axioms; it's a data container that supports
+arithmetic.
+
+**PyTorch Tensor vs. mathematical tensor:** In math, a tensor transforms in specific
+ways under coordinate changes (covariant/contravariant indices). In PyTorch, "tensor"
+just means "N-dimensional array." No transformation rules, no index gymnastics. The
+name was borrowed because the operations (multiply, contract, reshape) mirror what you
+do with mathematical tensors, but a PyTorch Tensor has no concept of covariance. It's
+just a box of numbers with a shape.
+
 | Shape | What it represents |
 |-------|-------------------|
 | `()` | A scalar (one number) |
-| `(5,)` | A vector (5 numbers) |
+| `(5,)` | A vector (5 numbers). The comma is Python tuple syntax: `(5)` is just the int 5; `(5,)` is a one-element tuple. |
 | `(3, 4)` | A matrix (3 rows × 4 columns) |
 | `(64, 1, 28, 28)` | A batch of 64 grayscale 28×28 images |
 | `(16, 3, 224, 224)` | A batch of 16 RGB 224×224 images |
@@ -35,9 +55,12 @@ A tensor is a multi-dimensional array of numbers. That's all.
 import torch
 
 x = torch.tensor([1.0, 2.0, 3.0])       # shape (3,)
-m = torch.randn(3, 4)                     # shape (3, 4), random values
+m = torch.randn(3, 4)                     # shape (3, 4), random normal values
 batch = torch.randn(64, 1, 28, 28)        # a batch of MNIST images
 ```
+
+**`randn`** = random normal. Fills the tensor with values drawn from a standard
+normal distribution (mean=0, std=1). Also: `rand` (uniform 0–1), `zeros`, `ones`.
 
 ### Why not just use NumPy?
 
@@ -80,10 +103,14 @@ learn linear relationships. To learn complex patterns, we stack multiple layers
 with **nonlinearities** (activation functions) between them:
 
 ```
-layer1 = relu(input @ W1 + b1)
-layer2 = relu(layer1 @ W2 + b2)
-output = layer2 @ W3 + b3
+hidden1 = relu(input @ W1 + b1)      # first hidden layer
+hidden2 = relu(hidden1 @ W2 + b2)    # second hidden layer
+output  = hidden2 @ W3 + b3          # output layer (no activation)
 ```
+
+Layers between input and output are called **hidden layers**. The output layer
+typically has no activation (for regression) or a special one like softmax (for
+classification).
 
 ### Why ReLU?
 
@@ -94,9 +121,90 @@ gives the network its power to approximate complex functions.
 
 ### The Universal Approximation Theorem
 
-A neural network with at least one hidden layer and a nonlinear activation can
+A neural network with at least **one hidden layer** and a nonlinear activation can
 approximate **any continuous function** to arbitrary precision, given enough
 neurons. This is the theoretical justification for why neural networks work at all.
+
+Technically, one ReLU hidden layer suffices for the theorem. In practice, we use
+multiple hidden layers because: (a) fewer total neurons are needed to reach the
+same accuracy, and (b) deeper networks learn hierarchical features (edges →
+textures → shapes → objects). Each ReLU after each hidden layer introduces another
+"fold" in the function the network can represent.
+
+### Clarification: "Fold" means kink, not polynomial order
+
+ReLU networks don't produce smooth curves like polynomials. They produce
+**piecewise-linear** functions — many straight segments joined at corners (kinks).
+A single ReLU neuron creates one kink. 100 ReLU neurons in a hidden layer can
+produce up to 100 kinks — 100 linear segments joined together. The network
+approximates curves not by being smooth, but by having enough tiny straight pieces
+in the right places.
+
+Adding depth (more layers) multiplies possible kinks exponentially rather than
+linearly. That's the efficiency argument for deeper architectures.
+
+A historical aside: If someone had handed Planck a sufficiently wide ReLU network
+in 1898 along with a table of blackbody radiation data, it might have fit the
+curve perfectly with 500 piecewise-linear segments — and told him nothing about
+quantized energy. The interpolation would have been a triumph; the physics would
+have remained hidden. Fortunately for science, the smooth functions of the era
+*couldn't* fit the data, forcing Planck toward his quantum hypothesis. The lesson:
+a neural network that fits data well is not the same as understanding the data.
+
+### Anatomy of a connection: Weights, biases, and ReLU
+
+Consider 468 input neurons connecting to 1000 hidden neurons. What lives where?
+
+- **W1** is a matrix of shape (468, 1000). Element W1[7, 12] is the weight on the
+  wire from input neuron 7 to hidden neuron 12. It scales how much neuron 7's
+  value contributes to neuron 12.
+- **b1** is a vector of shape (1000,). Element b1[12] is the bias for hidden neuron
+  12. There is one bias *per hidden neuron*, not one per wire. It shifts the
+  total signal arriving at neuron 12 before the activation fires.
+- **ReLU** is applied *per hidden neuron*, after all incoming wires are summed.
+  Hidden neuron 12 computes: `relu(W1[0,12]*x[0] + W1[1,12]*x[1] + ... + W1[467,12]*x[467] + b1[12])`.
+
+In the canonical diagram:
+```
+input neuron 7 ──── W1[7,12] ────┐
+input neuron 8 ──── W1[8,12] ────┤
+...                               ├──→ sum + b1[12] ──→ relu ──→ hidden1 neuron 12
+input neuron 467 ── W1[467,12] ──┘
+```
+
+So: weights live on the wires, one bias lives at each destination neuron, and ReLU
+fires once per neuron (not once per wire). Total parameters for this layer:
+468×1000 weights + 1000 biases = 469,000 learnable values.
+
+### Inputs and Outputs: What goes in, what comes out
+
+**Input:** A serialized, standardized representation of one data element. For a
+CIFAR-10 image (32×32 pixels, 3 color channels), the input is a tensor of shape
+(3, 32, 32) = 3,072 numbers, each a pixel intensity normalized to [0, 1] or
+[-1, 1]. For MNIST (28×28, grayscale): 784 numbers. The "standardizing rules"
+ensure every input is the same shape and scale — the network expects uniform geometry.
+
+**Output for classification (e.g. CIFAR-10, 10 classes):** The output layer has
+10 neurons, each producing a raw score (called a "logit") for one class. It's
+NOT binary lighting-up. Instead:
+
+```
+output = [2.1, -0.3, 0.5, -1.2, 4.7, 0.1, -0.8, 0.3, 1.0, -2.0]
+              airplane  auto   bird  cat  deer  dog  frog horse ship truck
+```
+
+The highest value wins (here: deer, with score 4.7). To convert these raw scores
+into probabilities that sum to 1, we apply **softmax**:
+
+```
+probs = softmax(output) → [0.02, 0.01, 0.03, 0.01, 0.82, 0.02, 0.01, 0.02, 0.04, 0.01]
+```
+
+Now the network says "82% confident it's a deer." The loss function (cross-entropy)
+penalizes the network based on how much probability it assigned to the *wrong* classes.
+
+So: 10 output neurons, all active with different magnitudes, softmax converts to
+a probability distribution, highest probability is the classification answer.
 
 ---
 
@@ -135,10 +243,21 @@ the data, and the loss function.
 
 ## 5. Backpropagation and Automatic Differentiation
 
-The magic of `loss.backward()`: PyTorch records every operation you perform on
-tensors (multiply, add, relu, etc.) in a computational graph. When you call
-`.backward()`, it traverses that graph in reverse, applying the chain rule to
-compute ∂loss/∂parameter for every parameter.
+**The key distinction:** Data is fixed. Weights (parameters) are what get adjusted.
+
+```
+data (fixed) ──→ model(weights) ──→ prediction ──→ loss
+                    ↑                                 |
+                    └─── gradients ← loss.backward() ─┘
+```
+
+`loss.backward()` computes ∂loss/∂weight for every weight in the model — NOT
+∂loss/∂input. The data flows through the model unchanged; the weights are what move.
+
+**How it works:** PyTorch records every operation you perform on tensors (multiply,
+add, relu, etc.) in a computational graph. When you call `.backward()`, it traverses
+that graph in reverse, applying the chain rule to compute the gradient of the loss
+with respect to every parameter that has `requires_grad=True`.
 
 You never write derivative code. You write the forward pass; PyTorch handles
 the backward pass automatically.
