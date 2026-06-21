@@ -28,6 +28,7 @@ Thumbs.db
 
 # Large data files (regenerable via download scripts)
 *.kml
+data/
 
 # Extracted text (regenerable from PDFs)
 *_extracted.txt

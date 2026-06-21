@@ -1,5 +1,11 @@
 # Case Study 01 — Fine-Tuning a Pre-Trained Model
 
+## To Do
+
+- [ ] Explore ideas for improving from 75% accuracy (and verify that 75% means 7500/10000 correct)
+- [ ] Create a mosaic of 10 rows × 20 columns of test images as a large PNG for display, and a smaller version placed on a slide in the deck
+- [ ] Treat PyTorch as the literal torch for a while: use a tool-oriented mindset to start comprehending it (in contrast to a neural-network-oriented mindset)
+
 ## Objective
 
 Take a pre-trained image classifier from HuggingFace/torchvision and fine-tune

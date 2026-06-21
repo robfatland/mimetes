@@ -54,26 +54,17 @@ print(f"Using device: {DEVICE}")
 
 def get_data_loaders():
     """Set up CIFAR-10 with transforms appropriate for ResNet."""
-    # ResNet expects 224x224 inputs normalized to ImageNet stats
-    transform_train = transforms.Compose([
-        transforms.Resize(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
-    ])
-
-    transform_test = transforms.Compose([
-        transforms.Resize(224),
+    transform = transforms.Compose([
+        transforms.Resize(64),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225]),
     ])
 
     train_data = datasets.CIFAR10(root="./data", train=True,
-                                   download=True, transform=transform_train)
+                                   download=True, transform=transform)
     test_data = datasets.CIFAR10(root="./data", train=False,
-                                  download=True, transform=transform_test)
+                                  download=True, transform=transform)
 
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE,
                               shuffle=True, num_workers=2)
@@ -84,6 +75,36 @@ def get_data_loaders():
     print(f"Test samples:     {len(test_data):,}")
 
     return train_loader, test_loader
+
+
+def extract_features(loader, model):
+    """Run all images through the frozen backbone ONCE, cache the 512-d features."""
+    model.eval()
+    features_list = []
+    labels_list = []
+
+    print("  Extracting features (one-time pass through frozen backbone)...")
+    with torch.no_grad():
+        for images, labels in loader:
+            images = images.to(DEVICE)
+            # Run through everything except the final FC layer
+            x = model.conv1(images)
+            x = model.bn1(x)
+            x = model.relu(x)
+            x = model.maxpool(x)
+            x = model.layer1(x)
+            x = model.layer2(x)
+            x = model.layer3(x)
+            x = model.layer4(x)
+            x = model.avgpool(x)
+            x = torch.flatten(x, 1)  # shape: (batch, 512)
+            features_list.append(x.cpu())
+            labels_list.append(labels)
+
+    all_features = torch.cat(features_list, dim=0)
+    all_labels = torch.cat(labels_list, dim=0)
+    print(f"  Features shape: {all_features.shape}")
+    return all_features, all_labels
 
 
 def build_model():
@@ -232,29 +253,71 @@ if __name__ == "__main__":
     print("\n--- Loading data ---")
     train_loader, test_loader = get_data_loaders()
 
-    # Step 2: Model
+    # Step 2: Model (full ResNet for feature extraction)
     print("\n--- Building model ---")
     model = build_model()
 
-    # Step 3: Loss + Optimizer
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.fc.parameters(), lr=LEARNING_RATE)
+    # Step 3: Extract features ONCE through the frozen backbone
+    print("\n--- Caching features (this is the slow part, happens once) ---")
+    train_features, train_labels = extract_features(train_loader, model)
+    test_features, test_labels = extract_features(test_loader, model)
 
-    # Step 4: Train
-    print(f"\n--- Training for {NUM_EPOCHS} epochs ---")
+    # Step 4: Train ONLY the head on cached features (fast!)
+    print(f"\n--- Training head for {NUM_EPOCHS} epochs ---")
+    head = model.fc.to(DEVICE)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(head.parameters(), lr=LEARNING_RATE)
+
+    # Create simple data loaders from cached features
+    from torch.utils.data import TensorDataset
+    train_feat_loader = DataLoader(
+        TensorDataset(train_features, train_labels),
+        batch_size=256, shuffle=True)
+    test_feat_loader = DataLoader(
+        TensorDataset(test_features, test_labels),
+        batch_size=256, shuffle=False)
+
     losses = []
     accuracies = []
 
     for epoch in range(1, NUM_EPOCHS + 1):
-        loss, acc = train_one_epoch(model, train_loader, criterion, optimizer)
-        losses.append(loss)
+        head.train()
+        running_loss = 0.0
+        correct = 0
+        total = 0
+
+        for feats, labels in train_feat_loader:
+            feats, labels = feats.to(DEVICE), labels.to(DEVICE)
+            outputs = head(feats)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+            running_loss += loss.item() * feats.size(0)
+            _, predicted = outputs.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
+
+        avg_loss = running_loss / total
+        acc = 100.0 * correct / total
+        losses.append(avg_loss)
         accuracies.append(acc)
-        print(f"  Epoch {epoch}/{NUM_EPOCHS}: loss={loss:.4f}, "
-              f"train_acc={acc:.1f}%")
+        print(f"  Epoch {epoch}/{NUM_EPOCHS}: loss={avg_loss:.4f}, train_acc={acc:.1f}%")
 
     # Step 5: Evaluate
     print("\n--- Evaluating on test set ---")
-    test_acc = evaluate(model, test_loader)
+    head.eval()
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for feats, labels in test_feat_loader:
+            feats, labels = feats.to(DEVICE), labels.to(DEVICE)
+            outputs = head(feats)
+            _, predicted = outputs.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
+    test_acc = 100.0 * correct / total
     print(f"  Test accuracy: {test_acc:.1f}%")
 
     # Step 6: Visualize
@@ -265,6 +328,6 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("Done!")
     print(f"  Model: ResNet-18 (frozen) + new head ({NUM_CLASSES} classes)")
-    print(f"  Trainable params: {sum(p.numel() for p in model.fc.parameters()):,}")
+    print(f"  Trainable params: {sum(p.numel() for p in head.parameters()):,}")
     print(f"  Final test accuracy: {test_acc:.1f}%")
     print("=" * 60)
