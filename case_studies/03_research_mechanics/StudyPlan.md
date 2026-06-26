@@ -1,14 +1,14 @@
 # Case Study 03 — Using Programmatic AWS-AI for Scientific Research
 
 
-This document acts as working notes for a CloudBank "Cloud Clinic"
-presentation circa June 2026. 
+This document is the 'behind the scenes' working notes for the CloudBank 
+"Cloud Clinic" presented circa June 2026.
 
 
 ## Leading Welcome Remarks
 
 
-Today's presentation will run from a laptop. The intent is to touch upon three modes of AI use in research. These modes are *website* (AI2 AstaLabs), *IDE* using the `kiro` variant of VSCode, and programmatic access to the AWS cloud Bedrock AI service via API.
+Today's presentation will run from a laptop. The intent is to touch upon three modes of AI use in research. These modes are *website* (AI2 AstaLabs), *IDE* using the `kiro` variant of VSCode, and *programmatic access* to the AWS cloud Bedrock AI service via API.
 
 
 ## Open Topics / Action Items / To Do

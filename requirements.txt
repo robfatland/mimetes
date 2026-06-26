@@ -23,6 +23,14 @@ boto3
 # HTTP / API access
 requests
 
+# Geospatial / scientific data (case study 03)
+xarray
+zarr
+s3fs
+pyproj
+shapely
+Pillow
+
 # Jupyter support
 jupyter
 ipykernel

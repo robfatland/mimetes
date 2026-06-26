@@ -33,8 +33,9 @@ data/
 # Extracted text (regenerable from PDFs)
 *_extracted.txt
 
-# Rendered presentation output (regenerable)
-presentation.html
+# Rendered presentation output (regenerable via `make decks`)
+slides.html
+case_studies/*/slides.html
 
 # Figure previews (regenerable)
 images/preview/

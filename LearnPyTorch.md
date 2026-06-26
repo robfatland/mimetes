@@ -9,20 +9,20 @@ case studies.
 
 PyTorch is a Python library that provides two things:
 
-1. **Tensors** — like NumPy arrays, but they can run on GPUs and they track
-   the math you do with them
+1. **Tensors** — analogous to NumPy n-dimensional arrays, but adapted to GPUs and track math operations
 2. **Automatic differentiation** — given a computation that maps model parameters
    to a loss value, PyTorch computes how to adjust those parameters to reduce the
    loss (gradients). The data is fixed; the parameters are what move.
 
-Everything else — layers, networks, optimizers, data loaders — is built on top
+Other PyTorch features — layers, networks, optimizers, data loaders — are built on top
 of these two primitives.
+
 
 ---
 
 ## 2. Tensors
 
-A tensor is a multi-dimensional array of numbers. That's all.
+A tensor is a multi-dimensional array of numbers.
 
 **Properties:**
 - **Rectangular:** all dimensions are fixed-length. A 3×4×5 tensor has exactly 60 elements.
@@ -31,10 +31,12 @@ A tensor is a multi-dimensional array of numbers. That's all.
   what makes GPU computation fast — contiguous memory with uniform stride.
 - **Arbitrary rank:** scalars (rank 0), vectors (rank 1), matrices (rank 2), or higher.
 
+
 **Relation to algebra:** The elements are drawn from ℝ (or ℂ), which are fields. The
 array itself is like a vector space element — a member of ℝ^(d1 × d2 × ... × dn).
 But PyTorch doesn't enforce field axioms; it's a data container that supports
 arithmetic.
+
 
 **PyTorch Tensor vs. mathematical tensor:** In math, a tensor transforms in specific
 ways under coordinate changes (covariant/contravariant indices). In PyTorch, "tensor"
@@ -43,6 +45,7 @@ name was borrowed because the operations (multiply, contract, reshape) mirror wh
 do with mathematical tensors, but a PyTorch Tensor has no concept of covariance. It's
 just a box of numbers with a shape.
 
+
 | Shape | What it represents |
 |-------|-------------------|
 | `()` | A scalar (one number) |
@@ -50,6 +53,7 @@ just a box of numbers with a shape.
 | `(3, 4)` | A matrix (3 rows × 4 columns) |
 | `(64, 1, 28, 28)` | A batch of 64 grayscale 28×28 images |
 | `(16, 3, 224, 224)` | A batch of 16 RGB 224×224 images |
+
 
 ```python
 import torch

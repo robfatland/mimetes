@@ -24,3 +24,10 @@ workspaces.
 - Invocation method? (shell script, Makefile target, git hook)
 
 **Status:** Parked. Revisit when ready to define the standard workspace setup.
+
+
+## mimetes to do list
+
+
+- Coordinate the existing makefile for building html decks with a bulk copy that renames `slides.html` to `~/D/slidesTopicword.html`
+- Verify that the relocated/renamed html decks run properly in Chrome including rendering all images
