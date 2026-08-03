@@ -54,8 +54,8 @@ pip install -r requirements.txt
 | 05 | Science gateway API | Not started |
 | 06 | Clustering: k-means vs spectral graph theory | Not started |
 | 07 | Random forest | Not started |
-| 08 | TBD | — |
-| 09 | TBD | — |
+| 08 | Discrete Fourier Transform | Not started |
+| 09 | Agentic AI | Not started |
 
 
 
@@ -99,7 +99,7 @@ mimetes/
 │   ├── 05_science_gateway/    # Science gateway API
 │   ├── 06_clustering/         # Clustering: k-means vs spectral graph theory
 │   ├── 07_random_forest/      # Random forest
-│   ├── 08_tbd/
-│   └── 09_tbd/
+│   ├── 08_Fourier/            # Discrete Fourier Transform from first principles
+│   └── 09_AgenticAI/           # Agentic AI: how coding assistants orchestrate around LLMs
 └── ScienceGatewayAPI/         # Prototype notebooks (→ case study 05)
 ```

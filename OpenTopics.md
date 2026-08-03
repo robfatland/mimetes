@@ -31,3 +31,23 @@ workspaces.
 
 - Coordinate the existing makefile for building html decks with a bulk copy that renames `slides.html` to `~/D/slidesTopicword.html`
 - Verify that the relocated/renamed html decks run properly in Chrome including rendering all images
+
+
+## Marp → Google Slides
+
+**Goal:** Present Marp slide decks via Google Slides.
+
+**Current approach (show-don't-edit):**
+
+```bash
+marp slides.md -o slides.pptx --allow-local-files --html
+```
+
+Upload the `.pptx` to Google Drive → open with Google Slides. Each slide is
+rendered as a flat image — presentable but not editable in Slides.
+
+**If editability is needed later:** The `marp2pptx` Python package
+(`pip install marp2pptx`) produces PPTX with native text objects rather than
+rasterized images. Import to Google Slides preserves editable text/code blocks.
+
+**Status:** Using Option 1 (flat image export) for now.

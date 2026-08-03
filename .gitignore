@@ -36,6 +36,8 @@ data/
 # Rendered presentation output (regenerable via `make decks`)
 slides.html
 case_studies/*/slides.html
+all_slides.md
+all_slides.html
 
 # Figure previews (regenerable)
 images/preview/

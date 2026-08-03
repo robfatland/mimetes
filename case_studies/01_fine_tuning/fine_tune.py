@@ -55,7 +55,7 @@ print(f"Using device: {DEVICE}")
 def get_data_loaders():
     """Set up CIFAR-10 with transforms appropriate for ResNet."""
     transform = transforms.Compose([
-        transforms.Resize(64),
+        transforms.Resize(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225]),
@@ -244,6 +244,71 @@ def plot_sample_predictions(model, test_loader):
     plt.close()
 
 
+def plot_mosaic(model, test_loader, rows=4, cols=4):
+    """
+    Create a mosaic of classified test images with green check (correct)
+    or red X (incorrect) overlay.
+    """
+    model.eval()
+
+    # Collect enough images
+    all_images, all_labels, all_preds = [], [], []
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images_device = images.to(DEVICE)
+            outputs = model(images_device)
+            _, predicted = outputs.max(1)
+            all_images.append(images)
+            all_labels.append(labels)
+            all_preds.append(predicted.cpu())
+            if len(all_labels) * BATCH_SIZE >= rows * cols:
+                break
+
+    all_images = torch.cat(all_images)[:rows * cols]
+    all_labels = torch.cat(all_labels)[:rows * cols]
+    all_preds = torch.cat(all_preds)[:rows * cols]
+
+    # Denormalize
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 2.5, rows * 2.8))
+    for i, ax in enumerate(axes.flat):
+        img = all_images[i].numpy().transpose(1, 2, 0)
+        img = std * img + mean
+        img = np.clip(img, 0, 1)
+
+        pred = all_preds[i].item()
+        true = all_labels[i].item()
+        correct = pred == true
+
+        ax.imshow(img)
+        ax.set_title(f"pred: {CIFAR10_CLASSES[pred]}\ntrue: {CIFAR10_CLASSES[true]}",
+                     fontsize=9, color='darkgreen' if correct else 'darkred',
+                     weight='bold')
+        ax.axis('off')
+
+        # Overlay check or X
+        if correct:
+            ax.text(0.95, 0.05, '✓', transform=ax.transAxes,
+                    fontsize=28, color='green', weight='bold',
+                    ha='right', va='bottom',
+                    bbox=dict(boxstyle='round,pad=0.1', facecolor='white', alpha=0.7))
+        else:
+            ax.text(0.95, 0.05, '✗', transform=ax.transAxes,
+                    fontsize=28, color='red', weight='bold',
+                    ha='right', va='bottom',
+                    bbox=dict(boxstyle='round,pad=0.1', facecolor='white', alpha=0.7))
+
+    plt.suptitle("CIFAR-10 Classification Mosaic — ResNet-18 Fine-Tuned",
+                 fontsize=14, weight='bold')
+    plt.tight_layout()
+    out_path = OUTPUT_DIR / "classification_mosaic.png"
+    plt.savefig(out_path, dpi=150, bbox_inches='tight')
+    print(f"Saved: {out_path}")
+    plt.close()
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Case Study 01: Fine-Tuning ResNet-18 on CIFAR-10")
@@ -324,6 +389,7 @@ if __name__ == "__main__":
     print("\n--- Generating plots ---")
     plot_loss_curve(losses, accuracies)
     plot_sample_predictions(model, test_loader)
+    plot_mosaic(model, test_loader, rows=4, cols=4)
 
     print("\n" + "=" * 60)
     print("Done!")
