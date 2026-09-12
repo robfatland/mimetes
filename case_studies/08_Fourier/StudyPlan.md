@@ -278,14 +278,10 @@ case studies 01 and 04. We will return to it after the Laplace detour.
 ## 5. From Discrete Power Series to the Continuous Laplace Transform
 
 
-This is the sharp departure promised in Section 3. Rather than treat Laplace's
-transform as a formula handed down from above, we build it up in three moves:
-first a *finite* sum that is the natural sibling of the DFT (the z-transform),
-then the *infinite* sum (the generating function), then the *continuous* limit
-(the Laplace integral). Each move loosens one constraint.
+This is the narrative swerve mentioned in Section 3: Developing the integral Laplace transform from a discrete transform (that will prove to be related to the Fourier Transform). We'll go at this in three stages: A *finite* sum called the z-transform, extension to an *infinite* sum called a generating function, and then moving on to a *continuous* limit called the Laplace integral.
 
 
-> **Attribution.** This section follows the pedagogical arc of:
+> **Attribution.** We follow the pedagogical arc of:
 >
 > Arthur Mattuck, *Lecture 19: Introduction to the Laplace Transform*,
 > **18.03 Differential Equations**, MIT OpenCourseWare, Massachusetts
@@ -307,19 +303,21 @@ then the *infinite* sum (the generating function), then the *continuous* limit
 ### 5.1 The finite analog of the DFT: the z-transform
 
 
-Recall from Section 6 that the DFT is a finite-dimensional linear operator: it
-maps an N-vector to an N-vector by N dot products against spinning phasors.
-There is a finite object one step more general than the DFT. Given a finite
-sequence $a_0, a_1, \ldots, a_{N-1}$, define
+Recall from above that the DFT is a finite-dimensional linear operator: it
+maps an N-vector to an N-vector via N dot products using phasors that spin at various constant rates. We'll shoot for something more *general* than the DFT: Given a fixed value $x$ and a finite sequence of $N$ values $a_0, a_1, \ldots, a_{N-1}$, define
 
 
 $$Z_N(x) \;=\; \sum_{n=0}^{N-1} a_n\, x^{n}.$$
 
 
-This is a truncated **z-transform** (equivalently, a polynomial in $x$ whose
-coefficients are the data). It is *not yet* the DFT — it is a function of a
-free variable $x$. The DFT is what you get by **evaluating this polynomial at
-the N roots of unity**: set $x = e^{-2\pi i k / N}$ for $k = 0, 1, \ldots, N-1$,
+The first "voila" ties this definition to the DFT: So this is a polynomial in $x$ where the *data* from the DFT (the column vector) are now the $a_i$ sequence: The coefficients of the $x$ polynomial are the data. In the DFT the data were written as a column vector $[a_0, a_1, \dots, a_{N-1}]^T$. This column vector was subjected to the transform as a sequence of $N$ dot products with complex-valued vectors.  
+
+
+Left off writing here... not responsible for lost or confusing articles.
+
+
+The second version of "voila" now follows: The definition of $Z_N(x)$ above is called a truncated **z-transform**. It is a function of a free variable $x$ so it is not the DFT... but the DFT is what we get by **evaluating this polynomial at
+the N roots of unity**. That is, set $x = e^{-2\pi i k / N}$ (we have set $n = 1$ in the usual kernel expression. Then we let $k = 0, 1, \ldots, N-1$,
 and
 
 
