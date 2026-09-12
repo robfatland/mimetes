@@ -1,83 +1,101 @@
-# Case Study 08 — The Discrete Fourier Transform
+# Case Study 08 — Fourier and Laplace Discrete and Continuous Transforms
 
 ## Objective
 
-Build up an understanding of the Discrete Fourier Transform (DFT) from a
-minimal mathematical background: complex numbers, the unit circle, and basic
-linear algebra operations. The goal is conceptual clarity — understanding what
-the DFT does, why it works, and how to use it — not just memorizing the formula.
+Understand the Fourier and Laplace Transforms in relation to one another. At the outset: Build some math mechanics for the "Discrete Fourier Transform (DFT)" from a minimal mathematical background: Familiarity with complex numbers and the complex unit circle and basic linear algebra. The DFT machinery is fun in its own right (so I claim) so this first part (sections 1 - 4) is done in a *fait accompli* manner... and then we just abandon it! In favor of a different discrete transform. And from there we transubstantiate into continuous versions of the discrete machinery, somehow arriving at the Fourier and Laplace transforms. That much is the easy part. The difficult part comes next: demonstrating that these transforms have some useful purpose.
+
 
 ## Prerequisites Assumed
 
-- Complex numbers: what they are, addition, multiplication, the polar form
-- The unit circle: e^{iθ} = cos θ + i sin θ
-- Linear algebra basics: vectors, dot products, matrix-vector multiplication
 
+- Complex numbers: what they are, addition, multiplication, the polar form
+- The complex unit circle: $e^{iθ} = \cos θ + i \sin θ$.
+- Linear algebra basics: vectors, dot products, matrix-vector multiplication
+    - Complex numbers will be elements of linear transformation matrices...
+        - ...so it is a collision of worlds
 
 ## Notation
 
-An N-dimensional Fourier Transform kernel (the matrix) is denoted $F_N$.
-The kernel entry at row k, column n is:
+
+This is where we begin simply presenting machinery for the interested reader to ingest. If you do not have paper and pencil on hand: Now would be a good time.
+
+
+We begin with $N$ ordered real numbers: Our data. Since it is ordered we can suppose it exists along an axis of *time*. For some reason we want to transform it to a different representation with a different axis: Not *time* but inverse time, i.e. *frequency*. To effect this transformation we will multiply our data (organized as a column vector) by something we call a *kernel*. An N-dimensional Fourier Transform kernel is an $N \times N$ matrix denoted $F_N$. We hope -- since we are using a matrix -- that the transform will prove to be linear. Now in an abuse of terminology we also say that the kernel entry at row k, column n of this matrix is the kernel:
+
 
 $$F_N[k, n] = e^{-2\pi i \, k \, n \,/\, N}$$
 
-We ignore the $1/\sqrt{N}$ normalization factor for now to keep the patterns
-visible.
 
-We write the forward transform as $F_N \mathbf{x} = \mathbf{X}$, where
-$\mathbf{x}$ is the time-domain vector (our data) and $\mathbf{X}$ is the
-frequency-domain vector (the transform output).
+This is the almost-complete specification of the N-dimensional transform. There is a factor of $1/\sqrt{N}$ that will come in to play shortly (a normalization factor) but for now to keep things simple we ignore it.
 
 
-## 1. The Trivial Case: N=1
+The Fourier transform going from time to frequency is said to be in the *forward* direction. The transformation is written as an equation: $F_N \; \mathbf{x} = \mathbf{X}$, where $\mathbf{x}$ is the time-domain vector containing our data. Then $\mathbf{X}$ is a *frequency-domain* vector: The forward transform result. As noted: The output is in terms of a new independent variable. (The transform changes the independent variable, in contrast to an operator like $\frac{d}{dx}$, which leaves the independent variable unchanged.)
 
-What is the Fourier transform of `[3]`? A 1-D "time series" with one sample.
+
+
+## 1. Building up transforms from $N=1$
+
+### 1.1 $N = 1$
+
+What is the Fourier transform of `[3]`? This is a 1-D "time series" vector with but one sample: $3$. Well with $N = 1$ we have only $k = n = 0$ so...
+
 
 $F_1 = [1]$
 
-The transform is just the value itself: $F_1 \cdot [3] = [3]$. There is only
-one frequency (the constant/mean component), and it equals the signal.
+
+The transform is just the one data value itself: $F_1 \cdot [3] = [3]$.
+
 
 **Exercise:** Convince yourself that $F_1$ is its own inverse: $F_1(F_1([x])) = [x]$.
 
+
 **Answer:** $F_1 = [1]$, so $F_1 \cdot F_1 = [1] \cdot [1] = [1] = I_1$.
-Applying it twice returns the original value. Trivial but establishes the
-pattern: the DFT is invertible.
+This is to suggest that the forward Discrete Fourier Transform is invertible.
 
 
-## 2. N=2: The Smallest Non-Trivial Case
+### 1.2 $N=2$, the smallest non-trivial case
 
-The DFT matrix for N=2:
 
-$$F_2 = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$$
+The DFT matrix for N=2 using the kernel recipe:
 
-This comes directly from the kernel $e^{-2\pi i \, k \, n / 2}$:
-- Row 0: $e^0 = 1$ for both n=0 and n=1
-- Row 1, n=0: $e^0 = 1$; Row 1, n=1: $e^{-\pi i} = -1$
 
-Apply it to a concrete vector, say $[a, b]^T$:
+$$F_2 = \begin{pmatrix} 1 & \;1 \\ 1 & -1 \end{pmatrix}$$
+
+
+- Row 0 ($k=0$): $e^0 = 1$ for $n=0$ and $n=1$
+- Row 1 ($k=1$): $n=0$: $e^0 = 1$; then $n=1$: $e^{-\frac{2\pi i}{2}} = -1$
+
+
+Apply this to a data vector: We use the convention of a column vector written one of two ways: $[a, b]^T$ or equivalently $\begin{pmatrix} a \\ b \end{pmatrix}$.
+
 
 $$F_2 \cdot \begin{pmatrix} a \\ b \end{pmatrix} = \begin{pmatrix} a + b \\ a - b \end{pmatrix}$$
 
-Row 0 gives the **sum** — the constant component of the signal.
-Row 1 gives the **difference** — the "highest frequency" for 2 points: how
-much the signal oscillates between its two samples.
 
-No "just go with it" here: it's addition and subtraction, and the matrix
-comes entirely from evaluating $e^{-2\pi i \, k \, n / 2}$.
+Row 0 gives the **sum** — the constant component of the signal. Row 1 gives the **difference** — the "highest frequency" for 2 points: how much the signal oscillates between its two samples.
 
 
-## 3. The Kernel
+This is the machinery of the DFT kernel $e^{-2\pi i \, k \, n / 2}$. As $N$ gets progressively larger $\dots 3, \; 4, \; 5, \; \dots$ the calculation of the matrix is a bit more work but a nice pattern will emerge.
+
+
+## 2. The Kernel examined and visualized
+
+
+### 2.1 The utility of $k$, $n$, and $N$
+
 
 The discrete kernel is: $e^{-2\pi i \, k \, n / N}$
+
 
 - **N** = dimension of the signal (number of samples)
 - **k** = frequency index (which row of the transform matrix; runs 0 to N−1)
 - **n** = time index (which column / which sample; runs 0 to N−1)
 
+
 The full transform matrix $F_N$ is built by evaluating this kernel for all
 (k, n) pairs. Each entry is a point on the unit circle. The matrix is N×N
 and transforms an N-element signal into N frequency coefficients.
+
 
 **Key point:** Every element of $\mathbf{x}$ participates in producing each
 element of $\mathbf{X}$. The k-th frequency coefficient $X[k]$ is a
@@ -87,15 +105,16 @@ product of the signal with the k-th detector. Nothing is local; every
 detector "listens to" the entire signal.
 
 
-## 4. Visualizing the Kernel
+### 2.2 Visualizing the Kernel
 
-The key visual: for each N, lay out an N×N grid of unit circle diagrams.
-Row k, column n shows the kernel value $e^{-2\pi i \, k \, n / N}$ as a dot
-on the unit circle with a phasor line from the origin.
+For each N, we lay out an $N \times N$ grid of unit circle diagrams corresponding to row k and column n. The blue line + dot shows the kernel value $e^{-2\pi i \, k \, n / N}$ on the complex unit circle: A phasor. It can be helpful to scan each row from left to right just as it is used in the matrix multiply applied to the (data) column vector.
 
-### N=1 through N=7 (stacked)
+
+#### N=1 through N=7 (stacked)
+
 
 ![DFT Kernel N=1 to N=7](images/dft_kernel_N1_to_N7.png)
+
 
 **Patterns to observe:**
 - Row 0 (k=0): all dots sit at angle 0 (the point 1+0i). This is the
@@ -103,235 +122,371 @@ on the unit circle with a phasor line from the origin.
 - Row 1 (k=1): dots rotate uniformly around the circle, one step of
   $2\pi/N$ per column.
 - Row k: dots rotate k times as fast as row 1.
-- The last row (k=N−1) rotates in the opposite direction from row 1 — it's
-  the conjugate of row 1.
+- The last row (k=N−1) rotates in the opposite direction from row 1 — the conjugate of row 1.
 
-### N=14 (conjugate-pair ordering)
+
+#### N=14 in conjugate-pair ordering
+
+
+A note on the figure below: it uses a **different row ordering** from the
+stacked $N=1 \dots 7$ figure above. The rows have been rearranged so the eye
+can catch a piece of geometry — most rows come in **mirror-image pairs**.
+
 
 ![DFT Kernel N=14 paired](images/dft_kernel_N14_paired.png)
 
-Here the rows are **reordered** to emphasize conjugate pairs. For real-valued
-input data, the DFT output at frequency k is the complex conjugate of the
-output at frequency N−k. Placing these rows adjacent makes the mirror
-symmetry visible: k and N−k rotate in opposite directions at the same speed.
 
-**Row ordering:** k=0 (constant), k=7 (Nyquist / π phase), then pairs
-(1, 13), (2, 12), (3, 11), (4, 10), (5, 9), (6, 8).
+Look at any adjacent pair: the two rows sweep out the same set of points on the
+unit circle, but one spins clockwise while the other spins counter-clockwise.
+Same speed, opposite direction. That is purely an
+observation about the picture.
 
 
-## 5. The DFT as N Dot Products
+*Why* this pairing matters, and what it has to do with the fact that our data
+is real-valued, is a genuinely useful result — but it depends on ideas we have
+not built yet, so we defer it to Section 6. For the moment, just enjoy the
+symmetry.
+
+
+**Row ordering used in the figure:** k=0 (the non-spinning row), k=7 (the lone
+row with no partner — it advances exactly half a turn per tick), then the
+mirror pairs (1, 13), (2, 12), (3, 11), (4, 10), (5, 9), (6, 8).
+
+
+## 3. The DFT as N Dot Products
+
+
+To this point we have begun to explore the *discrete* Fourier Transform as a
+sort of curious fait accompli, a device that is interesting but has no
+apparent purpose. The next section will unapologetically go a little ways
+further down this exploratory path with a vague promise that the utility will
+eventually become clear. But then, dear reader, we take a sudden sharp
+departure into a related discrete transform, namely the transform attributed
+to Laplace. The idea will be to see a transformation of this discrete
+transform based on a power series to a continuous or integral transform. Then
+we will try the same feat on the discrete Fourier Transform. In so doing we
+hope to pick up two transforms in one parallelized exposition; and from there
+proceed to practical utility.
+
 
 Each row of the kernel matrix defines a "detector" — a complex sinusoid at
 a specific frequency. The DFT of a signal is just N dot products: project
 the signal onto each detector. A large projection (large magnitude) means
 that frequency is strongly present in the signal.
 
-**Aha moment:** The DFT is just N dot products against N different spinning
+
+**Aha!** The DFT is just N dot products against N different spinning
 phasors. Every sample in $\mathbf{x}$ contributes to every coefficient in
 $\mathbf{X}$.
+
 
 In linear algebra terms: $F_N$ is a change-of-basis matrix. It rotates your
 signal from the time basis into the frequency basis. The coefficients in the
 new basis tell you "how much of each frequency."
 
 
-## 6. The DC Term (a jargon note)
+### The DC term: a special case of the k=0 dot product
 
-The k=0 frequency component is universally called the **DC term** in signal
-processing. The name comes from electrical engineering: "Direct Current"
-refers to a constant voltage (as opposed to Alternating Current, which
-oscillates). In our context, the k=0 component is the non-oscillating part
-of the signal — the constant offset, the mean. It's the only row of $F_N$
-where nothing rotates: all entries are 1.
 
-This term will appear in every spectral analysis context. When you see "DC
-component" it means: the average value, the zero-frequency term.
+The very first dot product — the projection onto row k=0 — is worth naming.
+Row 0 is all ones: $[1, 1, \ldots, 1]$, the only row of $F_N$ where nothing
+rotates. Its dot product with the signal is simply $x_0 + x_1 + \cdots +
+x_{N-1}$, the sum of all samples (with $1/\sqrt{N}$ normalization, $\sqrt{N}$
+times the mean).
 
 
-## 7. Invertibility: $F_2$ and $F_3$
+This k=0 component is universally called the **DC term** in signal
+processing. The name comes from electrical engineering: "Direct Current" is a
+constant voltage, as opposed to Alternating Current, which oscillates. The DC
+term is the non-oscillating part of the signal — the constant offset, the
+mean. When you see "DC component" in any spectral context, it means the
+zero-frequency term, the average value. It is nothing more than the first of
+the N dot products, the one against the detector that does not spin.
 
-### $F_2$: almost its own inverse
 
-Without a scalar factor, $F_2 \cdot F_2 = \begin{pmatrix} 2 & 0 \\ 0 & 2 \end{pmatrix} = 2I$.
+## 4. Invertibility, Orthogonality, and Change of Basis (condensed)
 
-Applying $F_2$ twice scales by N=2. All kernel entries of $F_2$ are real
-(+1 and −1), so the matrix happens to equal its own conjugate. The only
-issue is the scale factor.
 
-If we define the normalized transform as $\frac{1}{\sqrt{N}} F_N$, then:
+Everything below is the payoff of the dot-product picture: the rows of $F_N$
+are orthogonal, which makes the transform an invertible, information-
+preserving rotation. Condensed here so we can push on to the Laplace parallel.
 
-$$\left(\frac{1}{\sqrt{2}} F_2\right)^2 = \frac{1}{2} \cdot 2I = I$$
 
-With symmetric normalization, the $N=2$ transform is its own inverse.
+**Rows are orthogonal.** For distinct rows the inner product
+$\langle \mathbf{u}, \mathbf{v} \rangle = \sum_n u_n \overline{v_n}$ is zero.
+Worked check ($F_4$, rows 1 and 2): row 1 $=[1,-i,-1,i]$, row 2 $=[1,-1,1,-1]$,
+and $1 + i - 1 - i = 0$. Each row has magnitude $\sqrt{N}$, so with $1/\sqrt{N}$
+normalization the rows form an **orthonormal basis** for $\mathbb{C}^N$. The
+DFT is therefore a **unitary transformation** — a rotation from the
+time-domain basis to the frequency-domain basis that loses no information and
+distorts no distances.
 
-### $F_3$: not its own inverse
 
-$$F_3 = \begin{pmatrix} 1 & 1 & 1 \\ 1 & \omega & \omega^2 \\ 1 & \omega^2 & \omega^4 \end{pmatrix} \quad \text{where } \omega = e^{-2\pi i / 3}$$
+**Rows are periodic (cyclic).** Row k advances by $-2\pi k/N$ per tick; after
+N ticks it has made k full turns and returned to $1+0i$. The (N+1)-th tick
+lands on the first. Each row is periodic with period N — which is why the DFT
+applies to periodic (or periodically extended) signals.
 
-Here $\omega = -\frac{1}{2} - i\frac{\sqrt{3}}{2}$ — a complex number off
-the real line. The kernel has left the real axis. If we compute $F_3 \cdot F_3$
-we do NOT get a scalar multiple of the identity. Instead:
 
-$$F_3 \cdot F_3 \neq c \cdot I$$
+**Invertibility.** Because the rows are orthogonal, $F_N \cdot \overline{F_N}
+= N \cdot I$, so the inverse is the conjugate kernel scaled by $1/N$:
 
-The reason: $F_3$ is not equal to its own conjugate. The matrix has complex
-entries, and squaring it does not produce the cancellations needed for
-identity. This forces us to confront the inverse properly.
 
-### The inverse transform
+$$F_N^{-1}[n, k] = \frac{1}{N}\, e^{+2\pi i\, k\, n / N}, \qquad
+F_N^{-1} = \frac{1}{N}\,\overline{F_N}.$$
 
-The inverse of $F_N$ is:
 
-$$F_N^{-1}[n, k] = \frac{1}{N} \, e^{+2\pi i \, k \, n \,/\, N}$$
+The only changes from the forward transform are a **sign flip in the exponent**
+($-2\pi i \to +2\pi i$) and a **scale factor**. Intuitively: the forward
+transform decomposes by correlating against clockwise spinners; the inverse
+recomposes by summing counter-clockwise spinners at the discovered amplitudes.
+The sign flip *is* the conjugation. ($F_2$ is a degenerate case: its entries
+are real ($\pm 1$), so $F_2 \cdot F_2 = 2I$ and $\tfrac{1}{\sqrt2}F_2$ is its
+own inverse. $F_3$ has genuinely complex entries ($\omega = e^{-2\pi i/3}$), so
+it is *not* its own inverse and forces the conjugate-inverse formula above.)
 
-The only differences from the forward transform:
-1. **Sign change in the exponent:** $-2\pi i$ becomes $+2\pi i$
-2. **Scale factor of $1/N$**
 
-With symmetric normalization ($1/\sqrt{N}$ on both forward and inverse),
-the inverse kernel is the complex conjugate of the forward kernel:
+**Normalization conventions.** The symmetric choice ($1/\sqrt{N}$ on both
+transforms) is elegant but not universal. NumPy (`numpy.fft`) puts the full
+$1/N$ on the inverse and none on the forward. The physics is identical; only
+the bookkeeping differs.
 
-$$F_N^{-1} = \frac{1}{N} \overline{F_N}$$
 
-**Motivating the sign change:** Each row of $F_N$ spins clockwise (negative
-angle). The inverse spins counter-clockwise (positive angle). The
-orthogonality of the rows guarantees that when you correlate the output
-$\mathbf{X}$ with the counter-clockwise phasors, you recover $\mathbf{x}$.
-Intuitively: the forward transform *decomposes* by correlating against
-clockwise spinners; the inverse *recomposes* by summing counter-clockwise
-spinners at the discovered amplitudes.
+**Real data and conjugate pairs.** For real input, $X[k] = \overline{X[N-k]}$,
+because rows k and N−k are complex conjugates (they spin oppositely at the same
+speed). So the output is redundant: frequencies 0 through N/2 carry everything;
+the "negative frequencies" are the mirror image. This is the practical meaning
+of complex output from real-valued time series — magnitude and phase come in
+conjugate pairs.
 
-Another way to see it: $F_N \cdot \overline{F_N} = N \cdot I$. The
-orthogonality proof shows that rows of $F_N$ dotted with conjugate rows
-(i.e., rows of $\overline{F_N}$) give N on the diagonal and 0 off-diagonal.
-So $\overline{F_N} / N$ is the inverse. The sign flip *is* the conjugation.
 
-**Note on normalization conventions:** The symmetric choice ($1/\sqrt{N}$
-on both transforms) is elegant but not universal. A common alternative
-places the full $1/N$ on the inverse and uses no scalar on the forward
-transform. This is the convention in NumPy (`numpy.fft`). The physics is
-identical; only the bookkeeping differs.
+**Change of basis.** The same vector has two descriptions. In the time basis,
+$\mathbf{x} = \sum_n x_n \mathbf{e}_n$, a sum of scaled impulses (maximally
+localized). In the frequency basis, $\mathbf{x} = \sum_k X_k \mathbf{f}_k$, a
+sum of scaled sinusoids (maximally delocalized). The unitary DFT rotates
+between these orthonormal bases without stretching or losing anything. Neither
+is more "real"; they are two coordinate systems for one object — and the
+localized/delocalized contrast is the time–frequency uncertainty tradeoff.
 
 
-## 8. Further Exercises and Explorations
+**Convolution and CNNs (forward pointer).** The convolution theorem —
+pointwise multiplication in the frequency domain equals convolution in the
+time domain — is the operation at the heart of CNNs and the bridge back to
+case studies 01 and 04. We will return to it after the Laplace detour.
 
-### The first row: what does it do?
 
-For every $F_N$ the first row (k=0) is all ones: $[1, 1, 1, \ldots, 1]$.
+## 5. From Discrete Power Series to the Continuous Laplace Transform
 
-When we apply $F_N$ to a vector $[x_0, x_1, \ldots, x_{N-1}]^T$, the first
-output element is $x_0 + x_1 + \cdots + x_{N-1}$ — the sum of all samples.
-With the $1/\sqrt{N}$ normalization this becomes $\sqrt{N}$ times the mean.
-This is the DC term (Section 6).
 
-### Real-valued data and conjugate pairs
+This is the sharp departure promised in Section 3. Rather than treat Laplace's
+transform as a formula handed down from above, we build it up in three moves:
+first a *finite* sum that is the natural sibling of the DFT (the z-transform),
+then the *infinite* sum (the generating function), then the *continuous* limit
+(the Laplace integral). Each move loosens one constraint.
 
-**Question:** We consider real-valued input vectors. What is the connection
-between real-valued data and the rows of the DFT pairing off as complex
-conjugates?
 
-**Answer:** When the input $\mathbf{x}$ is real, the DFT output satisfies
-$X[k] = \overline{X[N-k]}$ — the output at frequency k is the complex
-conjugate of the output at frequency N−k. This is because rows k and N−k
-of $F_N$ are themselves complex conjugates of each other (they rotate in
-opposite directions at the same speed). Taking the dot product of a real
-vector with conjugate row-vectors produces conjugate results.
+> **Attribution.** This section follows the pedagogical arc of:
+>
+> Arthur Mattuck, *Lecture 19: Introduction to the Laplace Transform*,
+> **18.03 Differential Equations**, MIT OpenCourseWare, Massachusetts
+> Institute of Technology. (Course as taught in Spring 2010; video lectures
+> recorded live in Spring 2003.)
+> <https://ocw.mit.edu/courses/18-03-differential-equations-spring-2010/resources/lecture-19-introduction-to-the-laplace-transform/>
+> License: CC BY-NC-SA 4.0 (MIT OCW). Content here is a rephrasing/adaptation,
+> not a reproduction.
+>
+> The power-series-as-transform motivation and the two worked examples below
+> ($a_n = 1$ and $a_n = 1/n!$) are drawn from that lecture. **One thing still
+> to eyeball:** the lecture *identity, title, and instructor* are confirmed
+> from MIT's own pages, but the transcript body could not be re-fetched to
+> independently verify that these two specific examples sit in Lecture 19
+> (vs. an adjacent lecture). Skim the video/transcript once to confirm the
+> examples before publishing or presenting.
 
-This means for real data, the DFT output is redundant: you only need
-frequencies 0 through N/2. The "negative frequencies" (k > N/2) carry no
-new information — they're the mirror image.
 
-### Rows as cyclic functions
+### 5.1 The finite analog of the DFT: the z-transform
 
-**Question:** View each row of the DFT as a clock hand sweeping out equal
-angles with each tick (from one n value to the next). If we follow the hand
-to n = N−1 and then allow one additional tick: where do we end up?
 
-**Answer:** Row k advances by angle $-2\pi k / N$ per tick. After N ticks
-the total angle is $-2\pi k$ — exactly k full rotations, returning to the
-starting point (1 + 0i). The (N+1)-th tick lands on the same point as the
-first tick. Each row of the DFT is a **periodic function with period N**.
-The kernel values repeat cyclically. This is why the DFT applies to periodic
-or periodically-extended signals.
+Recall from Section 6 that the DFT is a finite-dimensional linear operator: it
+maps an N-vector to an N-vector by N dot products against spinning phasors.
+There is a finite object one step more general than the DFT. Given a finite
+sequence $a_0, a_1, \ldots, a_{N-1}$, define
 
-### Orthogonality of rows
 
-**Exercise:** Calculate the inner product of any two distinct rows of $F_4$
-or $F_5$. (Remember: for complex vectors, the inner product is
-$\langle \mathbf{u}, \mathbf{v} \rangle = \sum_n u_n \overline{v_n}$.)
+$$Z_N(x) \;=\; \sum_{n=0}^{N-1} a_n\, x^{n}.$$
 
-**Worked example ($F_4$, rows k=1 and k=2):**
 
-Row 1: $[1, \; e^{-i\pi/2}, \; e^{-i\pi}, \; e^{-i3\pi/2}] = [1, -i, -1, i]$
+This is a truncated **z-transform** (equivalently, a polynomial in $x$ whose
+coefficients are the data). It is *not yet* the DFT — it is a function of a
+free variable $x$. The DFT is what you get by **evaluating this polynomial at
+the N roots of unity**: set $x = e^{-2\pi i k / N}$ for $k = 0, 1, \ldots, N-1$,
+and
 
-Row 2: $[1, \; e^{-i\pi}, \; e^{-2i\pi}, \; e^{-3i\pi}] = [1, -1, 1, -1]$
 
-Inner product: $\sum_n \text{row}_1[n] \cdot \overline{\text{row}_2[n]}$
+$$Z_N\!\left(e^{-2\pi i k / N}\right) \;=\; \sum_{n=0}^{N-1} a_n\,
+e^{-2\pi i k n / N} \;=\; X[k].$$
 
-$= 1\cdot 1 + (-i)\cdot(-1) + (-1)\cdot 1 + i\cdot(-1) = 1 + i - 1 - i = 0$
 
-**Result:** The inner product of any two distinct rows is zero. The rows are
-**orthogonal**.
+So the DFT is the z-transform *sampled on the unit circle*. This is the hinge
+of the whole section: the finite Fourier operator and the finite power series
+are the same object seen from two angles — one evaluates at special points,
+the other keeps $x$ free.
 
-**Does this hold for any $F_N$?** Yes. This is a general property: the rows
-of $F_N$ form an orthogonal set. Moreover, each row has magnitude $\sqrt{N}$
-(since it has N entries each of magnitude 1). So with the $1/\sqrt{N}$
-normalization, the rows form an **orthonormal basis** for $\mathbb{C}^N$.
 
-**Interpretation in vector space language:** The DFT is a unitary
-transformation — a rotation (in N-dimensional complex space) from the
-time-domain basis to the frequency-domain basis. No information is lost,
-no distances are distorted. It's a perfect change of coordinates.
+### 5.2 Letting the sum go infinite: the generating function
 
 
-## 9. Change of Basis
+Now drop the truncation. Let the sequence run forever and keep $x$ free:
 
-The time-domain representation of a signal $\mathbf{x} = [x_0, x_1, \ldots, x_{N-1}]^T$ is:
 
-$$\mathbf{x} = x_0 \mathbf{e}_0 + x_1 \mathbf{e}_1 + \cdots + x_{N-1} \mathbf{e}_{N-1}$$
+$$A(x) \;=\; \sum_{n=0}^{\infty} a_n\, x^{n}.$$
 
-where $\mathbf{e}_n$ is the standard basis vector: all zeros with a 1 at
-position n. Each $x_n$ is the amplitude of the n-th impulse. The signal is
-literally a sum of scaled impulses.
 
-The DFT changes the basis. The frequency-domain representation of the same
-vector is:
+This infinite power series has a proper name: it is the **(ordinary)
+generating function** of the sequence $\{a_n\}$ — the same object a
+signal processor calls the **z-transform**. Read it as a *transform*: feed in
+a discrete sequence, get back a single function of $x$. All the information in
+the sequence is repackaged into one function, provided the series converges
+(which for now we take to mean $|x| < 1$, deferring careful convergence
+questions).
 
-$$\mathbf{x} = X_0 \mathbf{f}_0 + X_1 \mathbf{f}_1 + \cdots + X_{N-1} \mathbf{f}_{N-1}$$
 
-where $\mathbf{f}_k$ is the k-th frequency basis vector (a complex sinusoid
-at frequency k), and $X_k$ is the complex amplitude of that sinusoid in the
-signal.
+Two examples make the packaging concrete. Both are borrowed from the MIT
+lecture noted above (attribution still owed).
 
-Same vector, two descriptions:
-- **Time basis:** "I am this amplitude at this moment, that amplitude at that
-  moment, ..."
-- **Frequency basis:** "I am this much of frequency 0, that much of
-  frequency 1, ..."
 
-The unitary DFT rotates between these two orthonormal bases without
-stretching or losing anything. Neither representation is more "real" — they
-are two coordinate systems for the same object.
+**Example A: the all-ones sequence, $a_n = 1$.**
 
-The time-domain basis vectors are maximally localized (each is a single
-spike). The frequency-domain basis vectors are maximally delocalized (each
-fills the entire signal). This is the uncertainty tradeoff: precise in time
-= spread in frequency, and vice versa.
 
+$$A(x) \;=\; \sum_{n=0}^{\infty} x^{n} \;=\; \frac{1}{1 - x}
+\qquad (|x| < 1).$$
 
-## 10. Real-Valued Data (TBD)
 
-We operate on real-valued time series. What does it mean that the output is
-complex? The conjugate symmetry property. Magnitude and phase interpretation.
+The humble geometric series. An infinite, structureless sequence of 1's
+collapses into a single tidy rational function. This is the generating
+function's whole appeal: an unwieldy sequence becomes a compact closed form.
 
 
-## 10. Connection to Convolution and CNNs (Future)
+**Example B: the reciprocal-factorial sequence, $a_n = 1/n!$.**
 
-The convolution theorem: pointwise multiplication in frequency domain equals
-convolution in time domain. This is the operation at the heart of CNNs.
-Bridge to case studies 01 and 04.
 
+$$A(x) \;=\; \sum_{n=0}^{\infty} \frac{x^{n}}{n!} \;=\; e^{x}
+\qquad (\text{all } x).$$
 
+
+The sequence $1, 1, \tfrac12, \tfrac16, \tfrac{1}{24}, \ldots$ packages
+into the exponential. Note this one converges everywhere — the factorial in
+the denominator tames the series. The contrast with Example A (which needs
+$|x|<1$) is exactly the convergence subtlety that will matter when we pass to
+the integral.
+
+
+### 5.3 Making the index continuous: the Laplace integral
+
+
+The final move is to let the *index itself* become continuous. Replace the
+discrete index $n$ by a continuous variable $t$, the coefficients $a_n$ by a
+function $a(t)$, and the sum by an integral:
+
+
+$$\sum_{n=0}^{\infty} a_n\, x^{n} \;\longrightarrow\;
+\int_{0}^{\infty} a(t)\, x^{t}\, dt.$$
+
+
+The awkward piece is $x^t$. Convergence of the power series wanted $0 < x < 1$;
+write that region cleanly with the substitution
+
+
+$$x = e^{-s}, \qquad s > 0 \;\Longleftrightarrow\; 0 < x < 1,$$
+
+
+so that $x^{t} = e^{-st}$. The integral becomes
+
+
+$$\boxed{\;\mathcal{L}\{a\}(s) \;=\; \int_{0}^{\infty} a(t)\, e^{-st}\, dt\;}$$
+
+
+which is the **Laplace transform**. It is the continuous analog of a
+generating function: the decaying kernel $e^{-st}$ plays the role that $x^n$
+played in the sum, and the requirement $s > 0$ is the continuous echo of
+$|x| < 1$. The one-sided integral (0 to $\infty$) is inherited directly from
+the power series starting at $n = 0$.
+
+
+### 5.4 The parallel move: DFT $\to$ continuous Fourier transform
+
+
+The same discrete → continuous passage, run on the Fourier side, produces the
+continuous Fourier transform. Start from the DFT kernel $e^{-2\pi i k n / N}$;
+let the sample index $n$ become continuous time $t$, the sum become an
+integral, and the discrete frequency index become a continuous frequency
+$\omega$:
+
+
+$$X[k] = \sum_{n=0}^{N-1} x_n\, e^{-2\pi i k n / N}
+\;\longrightarrow\;
+\hat{f}(\omega) \;=\; \int_{-\infty}^{\infty} f(t)\, e^{-i\omega t}\, dt.$$
+
+
+Structurally this mirrors the Laplace passage, but honesty requires naming one
+difference in *which knob is turned*:
+
+
+- **Laplace** arrives via the power-series / z-transform route and the
+  substitution $x = e^{-s}$: a **real decaying** kernel $e^{-st}$ and a
+  **one-sided** integral ($0$ to $\infty$), tied to convergence.
+- **Fourier** arrives by taking the DFT and letting $N \to \infty$ *and* the
+  sample spacing $\to 0$ (a period-to-infinity limit): a **purely
+  oscillating** kernel $e^{-i\omega t}$ and a **two-sided** integral
+  ($-\infty$ to $\infty$).
+
+
+### 5.5 The punchline: Fourier is a slice of Laplace
+
+
+The two developments converge. Write the Laplace variable as $s = \sigma +
+i\omega$. The kernel is then $e^{-st} = e^{-\sigma t}\, e^{-i\omega t}$ — a
+decay factor times an oscillation. Setting $\sigma = 0$ (i.e. $s = i\omega$,
+the imaginary axis) kills the decay and leaves the pure oscillation
+$e^{-i\omega t}$: exactly the Fourier kernel.
+
+
+So the Fourier transform is the Laplace transform restricted to the imaginary
+axis, and Laplace is the general case that also allows real decay. Two
+transforms, one parallelized exposition — which is precisely the payoff
+promised back in Section 5. From here we turn to what they are *for*.
+
+
+## 6. Examples of Use (in development)
+
+The goal of this section: let each transform earn its keep by solving a real
+problem. Ideally a matched pair, so the parallel structure of Section 7 pays
+off in application as well as derivation.
+
+- **Fourier — the heat equation (planned).** The classic. Fourier's own
+  motivating problem: heat diffusion on a rod (or ring). Transforming the PDE
+  in space turns $\partial_t u = \alpha\, \partial_{xx} u$ into a decoupled
+  set of ODEs in the Fourier coefficients, each decaying as
+  $e^{-\alpha k^2 t}$ — high frequencies die fastest, which is *why* diffusion
+  smooths. Ties directly back to the change-of-basis picture of Section 6.
+
+- **Laplace — an initial-value ODE (candidate).** Laplace's natural home:
+  solving a linear ODE with initial conditions by turning differentiation into
+  multiplication by $s$, solving algebraically, and inverting. A damped
+  oscillator or an RC/RL circuit would make the real-decay kernel
+  ($\sigma \neq 0$) do visible work, complementing the purely oscillatory heat
+  example.
+
+- **Geoscience tie-in (stretch).** If a glacier / climate time-series example
+  can carry the Fourier half (spectral analysis of a periodic signal), prefer
+  it over a generic textbook problem to keep the case study anchored in the
+  project's domain.
+
+**Open items:**
+- Pick the Laplace example and confirm it exercises $\sigma \neq 0$.
+- Decide how much worked algebra to show vs. delegate to a Python cell.
+- Each example needs a visual per the slides convention (heat decay animation
+  frames; pole diagram for the Laplace example).
 ## Visualization Approach
 
 - Python scripts in this directory generate matplotlib figures → PNG
